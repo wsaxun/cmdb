@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# chkconfig: - 64 36
+#This script used to stop and start collect
+#
+#	by xums 09/07 2017
+#
+project="/r2/maintain_scripts/ops/collectAlerts"
+py_pth='/usr/bin/python'
+is_exist=`ps -ef|grep 'collectAlerts.py' |grep -v 'grep' |wc -l`
+##start function
+function start(){
+    is_exist=`ps -ef|grep 'collectAlerts.py' |grep -v 'grep' |wc -l`
+    if [ $is_exist -le 0 ];then
+        cmd="cd $project/src && $py_pth collectAlerts.py"
+        eval $cmd
+        [ $? -eq 0 ] && echo "collectAlertsd start success"
+    fi
+}
+##stop function
+function stop(){
+    if [ $is_exist -ge 1 ];then
+        cmd=`ps -ef| grep 'collectAlerts.py' |grep -v 'grep' |awk '{print $2}'`
+        kill $cmd
+    fi
+	[ $? -eq 0 ] && echo "collectAlertsd stop success"
+}
+##status function
+function status(){
+	if [ $is_exist -ge 1 ];then
+		echo "collectAlertsd is running"
+	else 
+		echo "collectAlertsd stoped"
+	fi
+}
+case $1 in
+	start)
+			start
+			;;
+	stop)
+			stop
+			;;
+	restart)
+			stop
+            sleep 2
+			start
+			;;
+    status)
+        status
+        ;;
+	*)
+		s=${0##*/}
+		echo "Usage: service $s {start|stop|restart|status}"
+		exit 1
+		;;
+esac
